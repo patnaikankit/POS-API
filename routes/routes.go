@@ -7,7 +7,9 @@ import (
 
 func Setup(app *fiber.App) {
 	// auth
-	app.Post("cashiers/:cashierId/login", controllers.CreateCashier)
+	app.Post("/cashiers/:cashierID/login", controllers.Login)
+	app.Post("/cashiers/:cashierID/logout", controllers.Logout)
+	app.Get("/cashiers/:cashierId/passcode", controllers.Passcode)
 
 	// cashier
 	app.Get("/cashiers", controllers.CashierList)
@@ -17,6 +19,8 @@ func Setup(app *fiber.App) {
 	app.Delete("/cashiers/:cashierID", controllers.DeleteCashier)
 
 	// product
+	app.Get("/products", controllers.GetAllProducts)
+	app.Post("/products", controllers.AddProduct)
 
 	// payment
 }
