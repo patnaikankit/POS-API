@@ -53,7 +53,7 @@ func GetAllProducts(c *fiber.Ctx) error {
 		})
 	}
 
-	// product retrieval
+	// pagination
 	limit := c.Query("limit")
 	skip := c.Query("skip")
 	categoryID := c.Query("categoryId")
@@ -155,6 +155,7 @@ func AddProduct(c *fiber.Ctx) error {
 	var p []models.Product
 	db.DB.Find(&p)
 
+	// to store the associated discount
 	discount := models.Discount{
 		Qty:       data.Discount.Qty,
 		Type:      data.Discount.Types,
@@ -189,7 +190,58 @@ func AddProduct(c *fiber.Ctx) error {
 
 // get data regarding a particular product
 func GetProductDetails(c *fiber.Ctx) error {
-	return nil
+	// check if the token is present
+	headerToken := c.Get("Authorization")
+	if headerToken == "" {
+		return c.Status(401).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized Cashier!",
+			"error":   map[string]interface{}{},
+		})
+	}
+
+	// check if the cashier is authorized
+	if err := middlewares.AuthenticateToken(middlewares.SplitToken(headerToken)); err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized Cashier!",
+			"error":   map[string]interface{}{},
+		})
+	}
+
+	productID := c.Params("productID")
+	// to store all the products
+	productArray := make([]*models.ProductResult, 0)
+	var products []models.Product
+	db.DB.Where("id=?", productID).Find(&products)
+
+	var category models.Category
+	var discount models.Discount
+	for i := 0; i < len(products); i++ {
+		db.DB.Where("id=?", products[i].CategoryID).Find(&category)
+		db.DB.Where("id=?", products[i].DiscountID).Find(&discount)
+
+		productArray = append(productArray,
+			&models.ProductResult{
+				ID:       products[i].ID,
+				Sku:      products[i].Sku,
+				Name:     products[i].Name,
+				Stock:    products[i].Stock,
+				Price:    products[i].Price,
+				Image:    products[i].Image,
+				Category: category,
+				Discount: discount,
+			},
+		)
+	}
+
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Data Fetched Successfully",
+		"data":    productArray,
+	}
+
+	return c.JSON(response)
 }
 
 // delete a product
@@ -198,6 +250,7 @@ func DeleteProduct(c *fiber.Ctx) error {
 	var product models.Product
 
 	db.DB.First(&product, productID)
+	// if product does not exist
 	if product.ID == 0 {
 		return c.Status(404).JSON(fiber.Map{
 			"success": false,
@@ -215,10 +268,30 @@ func DeleteProduct(c *fiber.Ctx) error {
 
 // edit data of a product
 func UpdateProduct(c *fiber.Ctx) error {
+	// check if the token is present
+	headerToken := c.Get("Authorization")
+	if headerToken == "" {
+		return c.Status(401).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized Cashier!",
+			"error":   map[string]interface{}{},
+		})
+	}
+
+	// check if the cashier is authorized
+	if err := middlewares.AuthenticateToken(middlewares.SplitToken(headerToken)); err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"success": false,
+			"message": "Unauthorized Cashier!",
+			"error":   map[string]interface{}{},
+		})
+	}
+
 	productID := c.Params("productID")
 	var product models.Product
 	db.DB.Find(&product, "id=?", productID)
 
+	// if product does not exist
 	if product.Name == "" {
 		return c.Status(404).JSON(fiber.Map{
 			"success": false,
@@ -227,9 +300,11 @@ func UpdateProduct(c *fiber.Ctx) error {
 		})
 	}
 
+	// to hold the updated value
 	var updateProductData models.Product
 	c.BodyParser(&updateProductData)
 
+	// product name is required to verify if the intented product is chosen or not
 	if updateProductData.Name == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"success": false,
