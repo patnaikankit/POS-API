@@ -18,10 +18,10 @@ func NewPayment(c *fiber.Ctx) error {
 		log.Fatalf("Error during payment processing -> %v", err)
 	}
 
-	if data["name"] == "" || data["type"] == "" {
+	if data["name"] == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"success": false,
-			"message": "Both the fields are Required!",
+			"message": "Name is Required!",
 			"error":   map[string]interface{}{},
 		})
 	}

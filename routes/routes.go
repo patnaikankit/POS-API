@@ -31,4 +31,6 @@ func Setup(app *fiber.App) {
 	app.Get("/payments/:paymentID", controllers.PaymentData)
 	app.Put("/payments/:paymentID", controllers.UpdatePayment)
 	app.Delete("/payments/:paymentID", controllers.DeletePayment)
+
+	// order
 }
