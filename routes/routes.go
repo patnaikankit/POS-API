@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/patnaikankit/POS-API/controllers"
+	"github.com/patnaikankit/POS-API/utils"
 )
 
 func Setup(app *fiber.App) {
@@ -33,4 +34,8 @@ func Setup(app *fiber.App) {
 	app.Delete("/payments/:paymentID", controllers.DeletePayment)
 
 	// order
+
+	// report
+	app.Get("/revenue", utils.Revenue)
+	app.Get("/sales", utils.Sales)
 }
