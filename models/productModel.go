@@ -27,3 +27,8 @@ type ProductResult struct {
 	Category Category `json:"category"`
 	Discount Discount `json:"discount"`
 }
+
+type Products struct {
+	ProductID int `json:"productID"`
+	Quantity  int `json:"qty"`
+}

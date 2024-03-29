@@ -49,11 +49,14 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
+	// generating jwt token associated with the cashier
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"Issuer":    strconv.Itoa(int(cashier.ID)),
 		"ExpiresAt": time.Now().Add(time.Hour * 24).Unix(), //1 day
 	})
+
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"success": false,
@@ -97,6 +100,7 @@ func Logout(c *fiber.Ctx) error {
 		})
 	}
 
+	// expiring the jwt token stored in the cookie
 	cookie := fiber.Cookie{
 		Name:     "jwt",
 		Value:    "",
