@@ -26,6 +26,13 @@ func Setup(app *fiber.App) {
 	app.Delete("/products/:productID", controllers.DeleteProduct)
 	app.Put("/products/:productID", controllers.UpdateProduct)
 
+	// category
+	app.Get("/categories", controllers.GetAllCatgory)
+	app.Post("/categories", controllers.AddCategory)
+	app.Get("/categories/:categoryID", controllers.CategoryData)
+	app.Put("/categories/:categoryID", controllers.UpdateCategory)
+	app.Delete("/categories/:categoryID", controllers.DeleteCategory)
+
 	// payment
 	app.Get("/payments", controllers.GetAllPayments)
 	app.Post("/payments", controllers.NewPayment)
